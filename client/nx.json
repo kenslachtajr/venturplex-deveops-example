@@ -1,0 +1,33 @@
+{
+  "npmScope": "venturplex",
+  "implicitDependencies": {
+    "angular.json": "*",
+    "package.json": "*",
+    "tsconfig.json": "*",
+    "tslint.json": "*",
+    "nx.json": "*"
+  },
+  "projects": {
+    "venturplex-go-devops-example": {
+      "tags": []
+    },
+    "venturplex-go-devops-example-e2e": {
+      "tags": []
+    },
+    "core-data": {
+      "tags": []
+    },
+    "core-state": {
+      "tags": []
+    },
+    "material": {
+      "tags": []
+    },
+    "ui-login": {
+      "tags": []
+    },
+    "ui-toolbar": {
+      "tags": []
+    }
+  }
+}

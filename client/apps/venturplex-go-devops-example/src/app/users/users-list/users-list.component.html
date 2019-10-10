@@ -1,0 +1,22 @@
+<mat-card>
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+  <mat-list>
+    <h3 mat-subheader>Users</h3>
+    <mat-list-item
+      class="mat-list-option"
+      *ngFor="let user of users"
+      (click)="selectUser(user)"
+    >
+      <h4 mat-line><strong>User Title: </strong>{{ user.title }}</h4>
+      <p mat-line><strong>User Description: </strong>{{ user.description }}</p>
+      <button
+        mat-mini-fab
+        color="accent"
+        class="mat-pseudo-checkbox"
+        (click)="deleteUser(user); $event.stopImmediatePropagation()"
+      >
+        <mat-icon>clear</mat-icon>
+      </button>
+    </mat-list-item>
+  </mat-list>
+</mat-card>

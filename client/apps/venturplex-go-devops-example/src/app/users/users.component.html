@@ -1,0 +1,19 @@
+<div class="wrapper">
+  <div class="list-grid">
+    <venturplex-users-list
+      [users]="users$ | async"
+      [isLoading]="loading$ | async"
+      (selected)="selectUser($event)"
+      (deleted)="deleteUser($event)"
+    >
+    </venturplex-users-list>
+  </div>
+  <div class="details-grid">
+    <venturplex-users-details
+      [group]="form"
+      (saved)="saveUser($event)"
+      (canceled)="reset()"
+    >
+    </venturplex-users-details>
+  </div>
+</div>
