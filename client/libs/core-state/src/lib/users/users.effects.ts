@@ -38,9 +38,9 @@ export class UsersEffects {
           .pipe(map((res: User) => new UserCreated(res)));
       },
 
-      onError: (action: CreateUser, error) => {
-        console.error('error', error);
-      }
+      // onError: (action: CreateUser, error) => {
+      //   console.error('error', error);
+      // }
     }
   );
 
@@ -54,9 +54,9 @@ export class UsersEffects {
           .pipe(map((res: User) => new UserUpdated(res)));
       },
 
-      onError: (action: UpdateUser, error) => {
-        console.error('error', error);
-      }
+      // onError: (action: UpdateUser, error) => {
+      //   console.error('error', error);
+      // }
     }
   );
 
@@ -70,9 +70,9 @@ export class UsersEffects {
           .pipe(map(_ => new UserDeleted(action.payload)));
       },
 
-      onError: (action: DeleteUser, error) => {
-        console.error('error', error);
-      }
+      // onError: (action: DeleteUser, error) => {
+      //   console.error('error', error);
+      // }
     }
   );
 

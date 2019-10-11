@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	// "log"
+	"log"
 	"net/http"
     // "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	// "github.com/gin-contrib/cors"
 )
 
 type user struct {
@@ -95,6 +96,34 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// func main() {
+// 	// initUsers()
+// 	router := mux.NewRouter().StrictSlash(true)
+// 	router.HandleFunc("/", homeLink)
+// 	router.HandleFunc("/user", createUser).Methods("POST")
+// 	router.HandleFunc("/users", getAllUsers).Methods("GET")
+// 	router.HandleFunc("/users/{id}", getOneUser).Methods("GET")
+// 	router.HandleFunc("/users/{id}", updateUser).Methods("PATCH")
+// 	router.HandleFunc("/users/{id}", deleteUser).Methods("DELETE")
+
+	// corsOpts := cors.New(cors.Options{
+	// 	AllowedOrigins: []string{"http://localhost:4200/"}, //your service is available and allowed for this base url 
+	// 	AllowedMethods: []string{
+	// 		http.MethodGet,//http methods for your app
+	// 		http.MethodPost,
+	// 		http.MethodPut,
+	// 		http.MethodPatch,
+	// 		http.MethodDelete,
+	// 		http.MethodOptions,
+	// 		http.MethodHead,
+	// 	},	
+	// 	AllowedHeaders: []string{
+	// 		"*",//or you can your header key values which you are using in your application	
+	// 	},
+	// })
+	// 	http.ListenAndServe(":8080", corsOpts.Handler(router))
+// }
+
 func main() {
 	// initUsers()
 	router := mux.NewRouter().StrictSlash(true)
@@ -104,6 +133,7 @@ func main() {
 	router.HandleFunc("/users/{id}", getOneUser).Methods("GET")
 	router.HandleFunc("/users/{id}", updateUser).Methods("PATCH")
 	router.HandleFunc("/users/{id}", deleteUser).Methods("DELETE")
+	log.Fatal(http.ListenAndServe(":8080", router))
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:4200/"}, //your service is available and allowed for this base url 
