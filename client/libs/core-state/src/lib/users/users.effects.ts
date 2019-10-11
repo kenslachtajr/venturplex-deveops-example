@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { DataPersistence } from '@nrwl/angular';
 
 import { User, UsersService } from '@venturplex/core-data';
@@ -24,7 +24,7 @@ export class UsersEffects {
     run: (action: LoadUsers, state: UsersState) => {
       return this.usersService
         .get()
-        .pipe(map((res: User[]) => new UsersLoaded(res)));
+        .pipe(tap(res => console.log(res)),map((res: User[]) => new UsersLoaded(res)));
     }
   });
 
@@ -38,9 +38,9 @@ export class UsersEffects {
           .pipe(map((res: User) => new UserCreated(res)));
       },
 
-      // onError: (action: CreateUser, error) => {
-      //   console.error('error', error);
-      // }
+      onError: (action: CreateUser, error) => {
+        console.error('error', error);
+      }
     }
   );
 
@@ -54,9 +54,9 @@ export class UsersEffects {
           .pipe(map((res: User) => new UserUpdated(res)));
       },
 
-      // onError: (action: UpdateUser, error) => {
-      //   console.error('error', error);
-      // }
+      onError: (action: UpdateUser, error) => {
+        console.error('error', error);
+      }
     }
   );
 
@@ -70,9 +70,9 @@ export class UsersEffects {
           .pipe(map(_ => new UserDeleted(action.payload)));
       },
 
-      // onError: (action: DeleteUser, error) => {
-      //   console.error('error', error);
-      // }
+      onError: (action: DeleteUser, error) => {
+        console.error('error', error);
+      }
     }
   );
 

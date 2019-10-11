@@ -21,6 +21,7 @@ export class UsersComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.users$.subscribe(res => console.log("your response", res));
     this.usersFacade.loadUsers();
     this.usersFacade.mutations$.subscribe(_ => this.reset());
     this.initForm();

@@ -5,6 +5,16 @@
   <form (submit)="saveUser(group.value)" [formGroup]="group">
     <mat-card-content>
       <mat-form-field appearance="outline">
+        <mat-label>User ID</mat-label>
+        <input
+          formControlName="id"
+          matInput
+          type="text"
+          placeholder="Enter User ID"
+          name="user ID"
+        />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
         <mat-label>User Title</mat-label>
         <input
           formControlName="title"

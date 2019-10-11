@@ -13,9 +13,9 @@ import (
 )
 
 type user struct {
-	ID          string `json:"ID"`
-	Title       string `json:"Title"`
-	Description string `json:"Description"`
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type allUsers []user
@@ -38,6 +38,7 @@ func homeLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	var newUser user
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -52,6 +53,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getOneUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	userID := mux.Vars(r)["id"]
 
 	for _, singleUser := range users {
@@ -62,10 +64,12 @@ func getOneUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	json.NewEncoder(w).Encode(users)
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	userID := mux.Vars(r)["id"]
 	var updatedUser user
 
@@ -86,6 +90,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	userID := mux.Vars(r)["id"]
 
 	for i, singleUser := range users {
@@ -124,11 +129,15 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	// 	http.ListenAndServe(":8080", corsOpts.Handler(router))
 // }
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func main() {
 	// initUsers()
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", homeLink)
-	router.HandleFunc("/user", createUser).Methods("POST")
+	router.HandleFunc("/users", createUser).Methods("POST")
 	router.HandleFunc("/users", getAllUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", getOneUser).Methods("GET")
 	router.HandleFunc("/users/{id}", updateUser).Methods("PATCH")

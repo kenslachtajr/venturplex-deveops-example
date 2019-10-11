@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { User } from './users.model';
 import { Observable } from 'rxjs';
 
-const BASE_URL = 'https://localhost:8080/';
+const BASE_URL = 'http://localhost:8080/';
 const model = 'users';
 
 @Injectable({
