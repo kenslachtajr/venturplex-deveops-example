@@ -1,163 +1,186 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-    // "github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
-	// "github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-type user struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+type Users struct {
+	Id        int    `gorm:"AUTO_INCREMENT" form:"id" json:"id"`
+	Firstname string `gorm:"not null" form:"firstname" json:"firstname"`
+	Lastname  string `gorm:"not null" form:"lastname" json:"lastname"`
 }
 
-type allUsers []user
+func InitDb() *gorm.DB {
+	// Openning file
+	db, err := gorm.Open("sqlite3", "./data.db")
+	// Display SQL queries
+	db.LogMode(true)
 
-var users = allUsers{
-	{
-		ID:          "1",
-		Title:       "Introduction to Golang",
-		Description: "Come join us for a chance to learn how golang works and get to eventually try it out",
-	},
-	{
-		ID:          "2",
-		Title:       "Advanced Golang",
-		Description: "Come join us!",
-	},
-}
-
-func homeLink(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome home!")
-}
-
-func createUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	var newUser user
-	reqBody, err := ioutil.ReadAll(r.Body)
+	// Error
 	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the user title and description only in order to update")
+		panic(err)
 	}
-	
-	json.Unmarshal(reqBody, &newUser)
-	users = append(users, newUser)
-	w.WriteHeader(http.StatusCreated)
+	// Creating the table
+	if !db.HasTable(&Users{}) {
+		db.CreateTable(&Users{})
+		db.Set("gorm:table_options", "ENGINE=InnoDB").CreateTable(&Users{})
+	}
 
-	json.NewEncoder(w).Encode(newUser)
+	return db
 }
 
-func getOneUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	userID := mux.Vars(r)["id"]
+func Cors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+		c.Next()
+	}
+}
 
-	for _, singleUser := range users {
-		if singleUser.ID == userID {
-			json.NewEncoder(w).Encode(singleUser)
+func PostUser(c *gin.Context) {
+	db := InitDb()
+	defer db.Close()
+
+	var user Users
+	c.Bind(&user)
+
+	if user.Firstname != "" && user.Lastname != "" {
+		// INSERT INTO "users" (name) VALUES (user.Name);
+		db.Create(&user)
+		// Display error
+		c.JSON(201, gin.H{"success": user})
+	} else {
+		// Display error
+		c.JSON(422, gin.H{"error": "Fields are empty"})
+	}
+
+	// curl -i -X POST -H "Content-Type: application/json" -d "{ \"firstname\": \"Thea\", \"lastname\": \"Queen\" }" http://localhost:8080/api/v1/users
+}
+
+func GetUsers(c *gin.Context) {
+	// Connection to the database
+	db := InitDb()
+	// Close connection database
+	defer db.Close()
+
+	var users []Users
+	// SELECT * FROM users
+	db.Find(&users)
+
+	// Display JSON result
+	c.JSON(200, users)
+
+	// curl -i http://localhost:8080/api/v1/users
+}
+
+func GetUser(c *gin.Context) {
+	// Connection to the database
+	db := InitDb()
+	// Close connection database
+	defer db.Close()
+
+	id := c.Params.ByName("id")
+	var user Users
+	// SELECT * FROM users WHERE id = 1;
+	db.First(&user, id)
+
+	if user.Id != 0 {
+		// Display JSON result
+		c.JSON(200, user)
+	} else {
+		// Display JSON error
+		c.JSON(404, gin.H{"error": "User not found"})
+	}
+
+	// curl -i http://localhost:8080/api/v1/users/1
+}
+
+func UpdateUser(c *gin.Context) {
+	// Connection to the database
+	db := InitDb()
+	// Close connection database
+	defer db.Close()
+
+	// Get id user
+	id := c.Params.ByName("id")
+	var user Users
+	// SELECT * FROM users WHERE id = 1;
+	db.First(&user, id)
+
+	if user.Firstname != "" && user.Lastname != "" {
+
+		if user.Id != 0 {
+			var newUser Users
+			c.Bind(&newUser)
+
+			result := Users{
+				Id:        user.Id,
+				Firstname: newUser.Firstname,
+				Lastname:  newUser.Lastname,
+			}
+
+			// UPDATE users SET firstname='newUser.Firstname', lastname='newUser.Lastname' WHERE id = user.Id;
+			db.Save(&result)
+			// Display modified data in JSON message "success"
+			c.JSON(200, gin.H{"success": result})
+		} else {
+			// Display JSON error
+			c.JSON(404, gin.H{"error": "User not found"})
 		}
+
+	} else {
+		// Display JSON error
+		c.JSON(422, gin.H{"error": "Fields are empty"})
 	}
+
+	// curl -i -X PUT -H "Content-Type: application/json" -d "{ \"firstname\": \"Thea\", \"lastname\": \"Merlyn\" }" http://localhost:8080/api/v1/users/1
 }
 
-func getAllUsers(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	json.NewEncoder(w).Encode(users)
-}
+func DeleteUser(c *gin.Context) {
+	// Connection to the database
+	db := InitDb()
+	// Close connection database
+	defer db.Close()
 
-func updateUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	userID := mux.Vars(r)["id"]
-	var updatedUser user
+	// Get id user
+	id := c.Params.ByName("id")
+	var user Users
+	// SELECT * FROM users WHERE id = 1;
+	db.First(&user, id)
 
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the user title and description only in order to update")
+	if user.Id != 0 {
+		// DELETE FROM users WHERE id = user.Id
+		db.Delete(&user)
+		// Display JSON result
+		c.JSON(200, gin.H{"success": "User #" + id + " deleted"})
+	} else {
+		// Display JSON error
+		c.JSON(404, gin.H{"error": "User not found"})
 	}
-	json.Unmarshal(reqBody, &updatedUser)
 
-	for i, singleUser := range users {
-		if singleUser.ID == userID {
-			singleUser.Title = updatedUser.Title
-			singleUser.Description = updatedUser.Description
-			users = append(users[:i], singleUser)
-			json.NewEncoder(w).Encode(singleUser)
-		}
-	}
-}
-
-func deleteUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	userID := mux.Vars(r)["id"]
-
-	for i, singleUser := range users {
-		if singleUser.ID == userID {
-			users = append(users[:i], users[i+1:]...)
-			fmt.Fprintf(w, "The user with ID %v has been deleted successfully", userID)
-		}
-	}
-}
-
-// func main() {
-// 	// initUsers()
-// 	router := mux.NewRouter().StrictSlash(true)
-// 	router.HandleFunc("/", homeLink)
-// 	router.HandleFunc("/user", createUser).Methods("POST")
-// 	router.HandleFunc("/users", getAllUsers).Methods("GET")
-// 	router.HandleFunc("/users/{id}", getOneUser).Methods("GET")
-// 	router.HandleFunc("/users/{id}", updateUser).Methods("PATCH")
-// 	router.HandleFunc("/users/{id}", deleteUser).Methods("DELETE")
-
-	// corsOpts := cors.New(cors.Options{
-	// 	AllowedOrigins: []string{"http://localhost:4200/"}, //your service is available and allowed for this base url 
-	// 	AllowedMethods: []string{
-	// 		http.MethodGet,//http methods for your app
-	// 		http.MethodPost,
-	// 		http.MethodPut,
-	// 		http.MethodPatch,
-	// 		http.MethodDelete,
-	// 		http.MethodOptions,
-	// 		http.MethodHead,
-	// 	},	
-	// 	AllowedHeaders: []string{
-	// 		"*",//or you can your header key values which you are using in your application	
-	// 	},
-	// })
-	// 	http.ListenAndServe(":8080", corsOpts.Handler(router))
-// }
-
-func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	// curl -i -X DELETE http://localhost:8080/api/v1/users/1
 }
 
 func main() {
-	// initUsers()
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", homeLink)
-	router.HandleFunc("/users", createUser).Methods("POST")
-	router.HandleFunc("/users", getAllUsers).Methods("GET")
-	router.HandleFunc("/users/{id}", getOneUser).Methods("GET")
-	router.HandleFunc("/users/{id}", updateUser).Methods("PATCH")
-	router.HandleFunc("/users/{id}", deleteUser).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	r := gin.Default()
 
-	corsOpts := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:4200/"}, //your service is available and allowed for this base url 
-		AllowedMethods: []string{
-			http.MethodGet,//http methods for your app
-			http.MethodPost,
-			http.MethodPut,
-			http.MethodPatch,
-			http.MethodDelete,
-			http.MethodOptions,
-			http.MethodHead,
-		},	
-		AllowedHeaders: []string{
-			"*",//or you can your header key values which you are using in your application	
-		},
-	})
-		http.ListenAndServe(":8080", corsOpts.Handler(router))
+	r.Use(Cors())
+
+	v1 := r.Group("api/v1")
+	{
+		v1.POST("/users", PostUser)
+		v1.GET("/users", GetUsers)
+		v1.GET("/users/:id", GetUser)
+		v1.PUT("/users/:id", UpdateUser)
+		v1.DELETE("/users/:id", DeleteUser)
+	}
+
+	r.Run(":8080")
+}
+
+func OptionsUser(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE,POST, PUT")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	c.Next()
 }

@@ -51,8 +51,8 @@ export class UsersComponent implements OnInit {
   private initForm() {
     this.form = this.formBuilder.group({
       id: [null],
-      title: '',
-      description: ''
+      firstname: '',
+      lastname: ''
     });
   }
 }

@@ -44,8 +44,8 @@ export const selectCurrentUserId = createSelector(
 
 export const emptyUser: User = {
   id: null,
-  title: '',
-  description: '',
+  firstname: '',
+  lastname: '',
 };
 
 export const selectCurrentUser = createSelector(
