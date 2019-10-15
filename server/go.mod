@@ -8,6 +8,7 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/jinzhu/gorm v1.9.11
 	github.com/json-iterator/go v1.1.7 // indirect
+	github.com/lib/pq v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/rs/cors v1.7.0
