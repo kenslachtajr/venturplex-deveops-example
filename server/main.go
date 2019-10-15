@@ -88,7 +88,6 @@ func UpdateUser(c *gin.Context) {
 		} else {
 			c.JSON(404, gin.H{"error": "User not found"})
 		}
-
 	} else {
 		c.JSON(422, gin.H{"error": "Fields are empty"})
 	}
